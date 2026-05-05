@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import ru.vk.recommender.demospringitmo.workshop.controllers.dto.CreateTaskDto;
 import ru.vk.recommender.demospringitmo.workshop.controllers.dto.ReplaceTaskDto;
+import ru.vk.recommender.demospringitmo.workshop.controllers.dto.TaskStatsDto;
 import ru.vk.recommender.demospringitmo.workshop.controllers.dto.UpdateTaskDto;
 import ru.vk.recommender.demospringitmo.workshop.controllers.model.Task;
 import ru.vk.recommender.demospringitmo.workshop.controllers.service.TaskService;
@@ -31,9 +32,15 @@ public class TaskController {
     //GET /api/tasks?done=true&query=read
     @GetMapping
     public List<Task> getAllTasks(@RequestParam(required = false) Boolean done,
-                                  @RequestParam(required = false) String query)
+                                  @RequestParam(required = false) String query,
+                                  @RequestParam(required = false) String sort)
     {
-        return taskService.getTasks(done, query);
+        return taskService.getTasks(done, query, sort);
+    }
+    //GET /api/tasks/stats
+    @GetMapping("/stats")
+    public TaskStatsDto getTaskStats() {
+        return taskService.getStats();
     }
 
     // GET /api/tasks/{id}

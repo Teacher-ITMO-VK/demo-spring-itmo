@@ -5,10 +5,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 import ru.vk.recommender.demospringitmo.workshop.controllers.dto.CreateTaskDto;
 import ru.vk.recommender.demospringitmo.workshop.controllers.dto.ReplaceTaskDto;
+import ru.vk.recommender.demospringitmo.workshop.controllers.dto.TaskStatsDto;
 import ru.vk.recommender.demospringitmo.workshop.controllers.dto.UpdateTaskDto;
 import ru.vk.recommender.demospringitmo.workshop.controllers.model.Task;
 import ru.vk.recommender.demospringitmo.workshop.controllers.repository.TaskRepository;
 
+import java.util.Comparator;
 import java.util.List;
 
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
@@ -19,11 +21,13 @@ import static org.springframework.http.HttpStatus.NOT_FOUND;
 public class TaskService {
     private final TaskRepository taskRepository;
 
-    public List<Task> getTasks(Boolean done, String query) {
+    public List<Task> getTasks(Boolean done, String query, String sort) {
+        Comparator<Task> comparator = resolveSortComparator(sort);
         List<Task> result = taskRepository.findAll().stream()
                 .filter(task -> done == null || task.done() == done)
                 .filter(task -> query == null || query.isBlank()
                         || task.title().toLowerCase().contains(query.toLowerCase()))
+                .sorted(comparator)
                 .toList();
 
         if (result.isEmpty()) {
@@ -31,6 +35,15 @@ public class TaskService {
         }
 
         return result;
+    }
+
+    public TaskStatsDto getStats() {
+        List<Task> tasks = taskRepository.findAll();
+        int total = tasks.size();
+        int done = (int) tasks.stream().filter(Task::done).count();
+        int pending = total - done;
+
+        return new TaskStatsDto(total, done, pending);
     }
 
     public Task getTaskById(long id) {
@@ -91,5 +104,16 @@ public class TaskService {
         if (!deleted) {
             throw new ResponseStatusException(NOT_FOUND, "Task not found");
         }
+    }
+
+    private Comparator<Task> resolveSortComparator(String sort) {
+        if (sort == null || sort.isBlank() || sort.equals("id")) {
+            return Comparator.comparingLong(Task::id);
+        }
+        if (sort.equals("title")) {
+            return Comparator.comparing((Task task) -> task.title().toLowerCase())
+                    .thenComparingLong(Task::id);
+        }
+        throw new ResponseStatusException(BAD_REQUEST, "Unsupported sort. Use: id or title");
     }
 }

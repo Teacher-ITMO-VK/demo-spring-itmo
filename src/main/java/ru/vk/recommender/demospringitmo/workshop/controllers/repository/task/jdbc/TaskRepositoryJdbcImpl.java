@@ -1,9 +1,10 @@
-package ru.vk.recommender.demospringitmo.workshop.controllers.repository.jdbc;
+package ru.vk.recommender.demospringitmo.workshop.controllers.repository.task.jdbc;
 
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
+import ru.vk.recommender.demospringitmo.workshop.controllers.dto.TaskStatsDto;
 import ru.vk.recommender.demospringitmo.workshop.controllers.model.Task;
-import ru.vk.recommender.demospringitmo.workshop.controllers.repository.TaskRepository;
+import ru.vk.recommender.demospringitmo.workshop.controllers.repository.task.TaskRepository;
 
 import javax.sql.DataSource;
 import java.sql.*;
@@ -22,7 +23,7 @@ public class TaskRepositoryJdbcImpl implements TaskRepository {
     }
 
     @Override
-    public List<Task> findAll() {
+    public List<Task> findAll(Boolean done, String query, String sort) {
         String sql = "SELECT id, title, done FROM tasks ORDER BY id";
 
         try (Connection con = dataSource.getConnection();
@@ -37,6 +38,11 @@ public class TaskRepositoryJdbcImpl implements TaskRepository {
         } catch (SQLException e) {
             throw new RuntimeException("Failed to findAll tasks", e);
         }
+    }
+
+    @Override
+    public TaskStatsDto getStats() {
+        return null;
     }
 
     @Override

@@ -1,7 +1,9 @@
-package ru.vk.recommender.demospringitmo.workshop.controllers.repository;
+package ru.vk.recommender.demospringitmo.workshop.controllers.repository.task.inMemory;
 
 import org.springframework.stereotype.Repository;
+import ru.vk.recommender.demospringitmo.workshop.controllers.dto.TaskStatsDto;
 import ru.vk.recommender.demospringitmo.workshop.controllers.model.Task;
+import ru.vk.recommender.demospringitmo.workshop.controllers.repository.task.TaskRepository;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -17,10 +19,15 @@ public class TaskRepositoryInMemoryImpl implements TaskRepository {
         save(new Task(0, "Write controller", true));
     }
 // STAGE 1: GET REQUESTS
-    public List<Task> findAll() {
+    public List<Task> findAll(Boolean done, String query, String sort) {
         return storage.values().stream()
                 .sorted(Comparator.comparingLong(Task::id))
                 .toList();
+    }
+
+    @Override
+    public TaskStatsDto getStats() {
+        return null;
     }
 
     public Optional<Task> findById(long id) {

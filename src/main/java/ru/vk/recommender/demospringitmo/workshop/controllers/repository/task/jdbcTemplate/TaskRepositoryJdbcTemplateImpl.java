@@ -1,12 +1,13 @@
-package ru.vk.recommender.demospringitmo.workshop.controllers.repository.jdbcTemplate;
+package ru.vk.recommender.demospringitmo.workshop.controllers.repository.task.jdbcTemplate;
 
 import org.springframework.context.annotation.Primary;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
+import ru.vk.recommender.demospringitmo.workshop.controllers.dto.TaskStatsDto;
 import ru.vk.recommender.demospringitmo.workshop.controllers.model.Task;
-import ru.vk.recommender.demospringitmo.workshop.controllers.repository.TaskRepository;
-import ru.vk.recommender.demospringitmo.workshop.controllers.repository.jdbcTemplate.mapper.TaskRowMapper;
+import ru.vk.recommender.demospringitmo.workshop.controllers.repository.task.TaskRepository;
+import ru.vk.recommender.demospringitmo.workshop.controllers.repository.task.jdbcTemplate.mapper.TaskRowMapper;
 
 import java.util.List;
 import java.util.Optional;
@@ -22,8 +23,65 @@ public class TaskRepositoryJdbcTemplateImpl implements TaskRepository {
     }
 
     @Override
-    public List<Task> findAll() {
-        return jdbcTemplate.query("SELECT id, title, done FROM tasks ORDER BY id", taskRowMapper);
+    public List<Task> findAll(Boolean done, String query, String sort) {
+        String orderBy = resolveOrderBy(sort);
+
+        StringBuilder sql = new StringBuilder("""
+        SELECT id, title, done
+        FROM tasks
+        WHERE 1=1
+        """);
+
+        List<Object> params = new java.util.ArrayList<>();
+
+        if (done != null) {
+            sql.append(" AND done = ? ");
+            params.add(done);
+        }
+
+        if (query != null && !query.isBlank()) {
+            sql.append(" AND title ILIKE ? ");
+            params.add("%" + query + "%");
+        }
+
+        sql.append(orderBy);
+
+        return jdbcTemplate.query(sql.toString(), taskRowMapper, params.toArray());
+    }
+
+    @Override
+    public TaskStatsDto getStats() {
+        String sql = """
+        SELECT
+          COUNT(*) AS total,
+          COUNT(*) FILTER (WHERE done = true) AS done,
+          COUNT(*) FILTER (WHERE done = false) AS pending
+        FROM tasks
+        """;
+
+        return jdbcTemplate.queryForObject(sql, (rs, rowNum) ->
+                new TaskStatsDto(
+                        rs.getInt("total"),
+                        rs.getInt("done"),
+                        rs.getInt("pending")
+                )
+        );
+    }
+
+
+    private String resolveOrderBy(String sort) {
+        if (sort == null || sort.isBlank()) {
+            return " ORDER BY id";
+        }
+
+        return switch (sort) {
+            case "id" -> " ORDER BY id";
+            case "title" -> " ORDER BY title";
+            case "done" -> " ORDER BY done, id";
+            case "id_desc" -> " ORDER BY id DESC";
+            case "title_desc" -> " ORDER BY title DESC";
+            default -> throw new IllegalArgumentException("Unsupported sort: " + sort);
+        };
     }
 
     @Override

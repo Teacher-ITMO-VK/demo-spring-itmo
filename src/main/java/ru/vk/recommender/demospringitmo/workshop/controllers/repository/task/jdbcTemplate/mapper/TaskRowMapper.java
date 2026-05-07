@@ -1,4 +1,4 @@
-package ru.vk.recommender.demospringitmo.workshop.controllers.repository.jdbcTemplate.mapper;
+package ru.vk.recommender.demospringitmo.workshop.controllers.repository.task.jdbcTemplate.mapper;
 
 import org.springframework.jdbc.core.RowMapper;
 import ru.vk.recommender.demospringitmo.workshop.controllers.model.Task;

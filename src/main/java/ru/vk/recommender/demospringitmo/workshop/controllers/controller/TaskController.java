@@ -18,10 +18,11 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import ru.vk.recommender.demospringitmo.workshop.controllers.dto.CreateTaskDto;
 import ru.vk.recommender.demospringitmo.workshop.controllers.dto.ReplaceTaskDto;
+import ru.vk.recommender.demospringitmo.workshop.controllers.dto.TaskDto;
 import ru.vk.recommender.demospringitmo.workshop.controllers.dto.TaskStatsDto;
 import ru.vk.recommender.demospringitmo.workshop.controllers.dto.UpdateTaskDto;
-import ru.vk.recommender.demospringitmo.workshop.controllers.model.Task;
-import ru.vk.recommender.demospringitmo.workshop.controllers.service.TaskService;
+import ru.vk.recommender.demospringitmo.workshop.controllers.model.jpa.Task;
+import ru.vk.recommender.demospringitmo.workshop.controllers.service.task.TaskService;
 
 @RequiredArgsConstructor
 @RestController
@@ -29,9 +30,9 @@ import ru.vk.recommender.demospringitmo.workshop.controllers.service.TaskService
 public class TaskController {
     private final TaskService taskService;
 
-    //GET /api/tasks?done=true&query=read
+    //GET /api/tasks?done=true&query=read&sort=id_desc
     @GetMapping
-    public List<Task> getAllTasks(@RequestParam(required = false) Boolean done,
+    public List<TaskDto> getAllTasks(@RequestParam(required = false) Boolean done,
                                   @RequestParam(required = false) String query,
                                   @RequestParam(required = false) String sort)
     {
@@ -45,8 +46,8 @@ public class TaskController {
 
     // GET /api/tasks/{id}
     @GetMapping("/{id}")
-    public ResponseEntity<Task> getTaskById(@PathVariable long id) {
-        Task task = taskService.getTaskById(id);
+    public ResponseEntity<TaskDto> getTaskById(@PathVariable long id) {
+        TaskDto task = taskService.getTaskById(id);
         return ResponseEntity.ok(task);
     }
 

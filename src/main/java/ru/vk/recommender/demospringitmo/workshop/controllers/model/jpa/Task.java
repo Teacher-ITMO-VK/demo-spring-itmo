@@ -2,7 +2,9 @@ package ru.vk.recommender.demospringitmo.workshop.controllers.model.jpa;
 
 import jakarta.persistence.*;
 import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
 
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,6 +23,10 @@ public class Task {
     @Setter
     @Column(nullable = false)
     private boolean done;
+
+    @CreationTimestamp
+    @Column(name = "created_at", nullable = false)
+    private OffsetDateTime createdAt;
 
     @OneToMany(
             mappedBy = "task", // "task" — владелец связи Note.task (foreign key хранится в notes).
